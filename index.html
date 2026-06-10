@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Universal AI Model Leaderboard</title>
+<style>
+:root{--bg:#000;--panel:#0a0a0a;--panel2:#111;--line:#222;--line2:#333;--txt:#fff;--dim:#999;--dimmer:#666;--ease:cubic-bezier(.22,1,.36,1)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:560px;min-height:100vh;border-left:1px solid var(--line);border-right:1px solid var(--line);padding-bottom:40px}
+header{padding:22px 16px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(0,0,0,.93);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:40;animation:fadeDown .5s var(--ease) both}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .dot{width:10px;height:10px;background:#fff;border-radius:50%;flex:none;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+h1{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.sub{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:var(--dim);margin-top:3px;text-transform:uppercase;letter-spacing:.14em}
+.stats{display:flex;gap:8px;margin-top:14px}
+.stat{flex:1;border:1px solid var(--line);background:var(--panel);padding:8px 10px;border-radius:6px;transition:border-color .25s}
+.stat:hover{border-color:var(--line2)}
+.stat b{display:block;font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700}
+.stat span{font-size:9px;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em}
+.tabs{display:flex;border-bottom:1px solid var(--line);background:#000}
+.tab{flex:1;padding:12px 0;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dimmer);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .25s,border-color .25s}
+.tab.on{color:#fff;border-bottom-color:#fff}
+.tab:hover{color:#ccc}
+.controls{padding:14px 16px 4px}
+.searchwrap{position:relative}
+.searchwrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.4}
+#search{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:#fff;padding:11px 12px 11px 36px;font-size:14px;outline:none;font-family:ui-monospace,Menlo,monospace;transition:border-color .25s,box-shadow .25s}
+#search:focus{border-color:#555;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+#search::placeholder{color:var(--dimmer)}
+.row2{display:flex;gap:8px;margin-top:10px}
+select{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:#fff;padding:9px 10px;font-size:12px;font-family:ui-monospace,Menlo,monospace;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;transition:border-color .25s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:26px}
+select:focus{border-color:#555}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:12px 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--dim);font-family:ui-monospace,Menlo,monospace;font-size:11px;padding:6px 12px;border-radius:999px;cursor:pointer;transition:all .25s var(--ease);white-space:nowrap}
+.chip:hover{border-color:#555;color:#fff}
+.chip.on{background:#fff;color:#000;border-color:#fff;font-weight:700}
+.chip .n{opacity:.5;margin-left:4px}
+.lic{display:flex;gap:6px;padding:0 16px 2px}
+.lic .chip{border-radius:6px}
+.meta-line{padding:8px 16px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em}
+#board{padding:2px 10px 20px}
+.lrow{display:flex;align-items:center;gap:10px;padding:11px 10px;border:1px solid transparent;border-bottom:1px solid var(--line);cursor:pointer;transition:background .2s,border-color .2s,transform .25s var(--ease);animation:fadeUp .4s var(--ease) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.lrow:hover{background:var(--panel);border-radius:8px}
+.lrow:active{transform:scale(.985)}
+.lrow .rank{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dimmer);width:34px;flex:none;text-align:right}
+.lrow .rank.top{color:#fff;font-weight:800}
+.lrow .nm{flex:1;min-width:0}
+.lrow .nm b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.lrow .nm span{font-size:10px;color:var(--dimmer);font-family:ui-monospace,Menlo,monospace}
+.tagO{font-size:8px;font-family:ui-monospace,Menlo,monospace;border:1px dashed var(--line2);color:#bbb;padding:1px 5px;border-radius:3px;letter-spacing:.06em;margin-left:6px;vertical-align:1px}
+.tagS{font-size:8px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--line2);color:var(--dimmer);padding:1px 5px;border-radius:3px;letter-spacing:.06em;margin-left:6px;vertical-align:1px}
+.lrow .bar{width:72px;height:3px;background:var(--line);border-radius:2px;overflow:hidden;flex:none}
+.lrow .bar i{display:block;height:100%;background:#fff;width:0;transition:width .7s var(--ease)}
+.lrow .sc{font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;width:48px;text-align:right;flex:none}
+.unranked-h{padding:18px 16px 6px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--dimmer);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.unranked-h::before,.unranked-h::after{content:"";flex:1;height:1px;background:var(--line)}
+.unranked-h .arrow{transition:transform .35s var(--ease)}
+.unranked-h.open .arrow{transform:rotate(180deg)}
+#unrankedList{overflow:hidden;max-height:0;transition:max-height .6s var(--ease)}
+#unrankedList.open{max-height:99999px}
+.empty{padding:60px 20px;text-align:center;color:var(--dimmer);font-family:ui-monospace,Menlo,monospace;font-size:12px;animation:fadeUp .4s both}
+#compareview{padding:14px 12px 20px;display:none;flex-direction:column;gap:12px}
+.cmp-selects{display:flex;gap:8px}
+.cmp-grid{border:1px solid var(--line);border-radius:10px;overflow:hidden;animation:fadeUp .4s var(--ease) both}
+.cmp-row{display:grid;grid-template-columns:92px 1fr 1fr;border-top:1px solid var(--line)}
+.cmp-row:first-child{border-top:none}
+.cmp-row>div{padding:9px 10px;font-size:11px;border-left:1px solid var(--line);word-break:break-word}
+.cmp-row>div:first-child{border-left:none;color:var(--dimmer);font-family:ui-monospace,Menlo,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center}
+.cmp-row.head>div{background:var(--panel2);font-weight:700;font-size:12px}
+.cmp-row .win{font-weight:700}
+.cmp-row .lose{color:var(--dim)}
+#backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .35s var(--ease);z-index:90}
+#backdrop.show{opacity:1;pointer-events:auto}
+#sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,103%);width:100%;max-width:560px;max-height:88vh;background:#0a0a0a;border:1px solid var(--line2);border-bottom:none;border-radius:16px 16px 0 0;z-index:91;transition:transform .45s var(--ease);display:flex;flex-direction:column}
+#sheet.show{transform:translate(-50%,0)}
+.grab{width:36px;height:4px;background:var(--line2);border-radius:99px;margin:10px auto 0;flex:none}
+.sheet-head{padding:14px 18px 12px;border-bottom:1px solid var(--line);flex:none}
+.sheet-head .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sheet-head h2{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.sheet-head .prov{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);margin-top:2px}
+#closeS{background:none;border:1px solid var(--line2);color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;flex:none;transition:all .2s}
+#closeS:hover{background:#fff;color:#000}
+.sheet-body{overflow-y:auto;padding:4px 18px 34px;-webkit-overflow-scrolling:touch}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.mcell{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:10px 12px}
+.mcell b{display:block;font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700}
+.mcell span{font-size:9px;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em}
+.mcell .rk{font-size:9px;color:var(--dim);font-family:ui-monospace,Menlo,monospace;float:right;margin-top:3px}
+.kv{display:grid;grid-template-columns:100px 1fr;gap:6px 12px;font-size:12px;margin:14px 0}
+.kv dt{color:var(--dimmer);font-family:ui-monospace,Menlo,monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding-top:1px}
+.kv dd{color:#ddd}
+.kv dd a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.note{font-size:13px;color:#ccc;line-height:1.65;border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+.catspills{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 2px}
+.catpill{font-size:9px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--line);color:#aaa;padding:2px 8px;border-radius:999px}
+@media (max-width:400px){.stats{flex-wrap:wrap}.stat{min-width:45%}.lrow .bar{width:48px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <h1>UNIVERSAL AI MODEL LEADERBOARD</h1>
+        <div class="sub">global ai model rankings</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stModels">0</b><span>Models</span></div>
+      <div class="stat"><b id="stProviders">0</b><span>Providers</span></div>
+      <div class="stat"><b id="stRanked">0</b><span>Ranked</span></div>
+      <div class="stat"><b id="stOpen">0</b><span>Open</span></div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab on" data-view="board">Rankings</button>
+    <button class="tab" data-view="compare">Compare</button>
+  </nav>
+
+  <div id="boardview">
+    <div class="controls">
+      <div class="searchwrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="search" type="text" placeholder="search models, providers…" autocomplete="off">
+      </div>
+    </div>
+    <div class="chips" id="catChips"></div>
+    <div class="meta-line" id="countLine"></div>
+    <div id="board"></div>
+  </div>
+
+  <div id="compareview">
+    <div class="cmp-selects">
+      <select id="cmpA"></select>
+      <select id="cmpB"></select>
+    </div>
+    <div id="cmpOut"></div>
+  </div>
+</div>
+
+<div id="backdrop"></div>
+<div id="sheet">
+  <div class="grab"></div>
+  <div class="sheet-head">
+    <div class="row">
+      <div>
+        <h2 id="mName"></h2>
+        <div class="prov" id="mProv"></div>
+      </div>
+      <button id="closeS" aria-label="close">✕</button>
+    </div>
+  </div>
+  <div class="sheet-body" id="mBody"></div>
+</div>
+<script>
+/* ============ EMBEDDED DATASET ============
+keys: n name | p provider | o open(1) | c cats | s status | w new-flag
+metrics: e ArenaElo | cd CodingElo | vs VisionElo | im ImageElo | ai IntelIndex | mp MMLU-Pro | ag ARC-AGI-2
+specs: x context | pr price/1M | r release | d note */
+const DATA=[
+/* ---- OPENAI ---- */
+{n:"GPT-5.5-high",p:"OpenAI",c:"GRCMATL",e:1506,cd:1562,vs:1312,ai:76,mp:89.6,ag:85,x:"1M",pr:"$5/$30",r:"Apr 2026",d:"Reasoning-max variant of GPT-5.5, OpenAI's first fully retrained base model since GPT-4.5. #1 Arena Elo and #1 ARC-AGI-2 among ranked models. 82.7% Terminal-Bench 2.0, 84.9% GDPval, 58.6% SWE-bench Pro."},
+{n:"GPT-5.5",p:"OpenAI",c:"GRCMATL",w:1,ls:62.5,x:"1M",pr:"$5/$30",r:"Apr 23 2026",d:"#4 on the LLM-Stats index (62.5), 2,114 Code Arena. Standard effort tier of GPT-5.5. Designed for agentic workflows — tools, computer use, multi-step tasks. ~40% fewer output tokens than GPT-5.4 at matched latency. First model family to break 60 on the AA Intelligence Index."},
+{n:"GPT-5.5 Pro",p:"OpenAI",c:"GRCMSBL",w:1,x:"1M",pr:"$30/$180",r:"Apr 23 2026",d:"Deliberative high-accuracy variant for long-horizon research and codebase-wide refactors. Leads FrontierMath Tier 4 at 39.6%."},
+{n:"GPT-5.5 Instant",p:"OpenAI",c:"GWEF",w:1,x:"1M",pr:"ChatGPT default",r:"May 5 2026",d:"Low-latency ChatGPT default since May 5, 2026. 52.5% fewer hallucinated claims than GPT-5.3 Instant in law, medicine and finance."},
+{n:"GPT-5.5-Codex",p:"OpenAI",c:"CAT",w:1,x:"400K",pr:"$5/$30 (Fast 2.5x)",r:"Apr 2026",d:"Coding-tuned GPT-5.5 for Codex CLI/IDE. Fast mode: 1.5x tokens/s at 2.5x cost. 83.4% Terminal-Bench 2.1 via Codex CLI."},
+{n:"GPT-5.4-high",p:"OpenAI",c:"GRCMATL",e:1495,cd:1538,vs:1290,ai:73,mp:88.5,ag:74,x:"1M",pr:"$2.50/$15",r:"Mar 2026"},
+{n:"GPT-5.4",p:"OpenAI",c:"GRCFATL",e:1465,cd:1468,vs:1275,ai:70,mp:88.4,ag:29.2,ls:60.2,x:"1M",pr:"$2.50/$15",r:"Mar 5 2026",d:"March 2026 flagship for professional work. Record OSWorld-Verified (75%) computer use, 83% GDPval, 57.7% SWE-bench Pro. First 1M-token OpenAI context."},
+{n:"GPT-5.4-mini-high",p:"OpenAI",c:"GCE",e:1461,cd:1461,ai:68,mp:87,ag:18.9,x:"1M",pr:"mini tier",r:"Mar 2026"},
+{n:"GPT-5.3-Codex",p:"OpenAI",c:"CAT",w:1,x:"400K",r:"Jan 2026",d:"Dedicated coding line powering Codex through early 2026. 75.2% SWE-bench Verified."},
+{n:"GPT-5.2-high",p:"OpenAI",c:"GRCM",e:1465,cd:1470,vs:1280,ai:72,mp:87.5,ag:52.9,x:"400K",r:"Dec 2025"},
+{n:"GPT-5.2",p:"OpenAI",c:"GRC",e:1464,cd:1465,vs:1248,ai:68,mp:87.4,ag:26.7,ls:56.4,x:"400K",pr:"$1.75/$14",r:"Dec 2025"},
+{n:"GPT-5.2 Pro",p:"OpenAI",c:"RGB",ls:61.4,r:"Dec 2025",d:"Deliberative Pro tier of GPT-5.2; #5 on the LLM-Stats index (61.4)."},
+{n:"GPT-5.1-high",p:"OpenAI",c:"GRCM",e:1464,cd:1466,vs:1250,ai:70,mp:87.1,ag:17.6,r:"Nov 2025"},
+{n:"GPT-5.1",p:"OpenAI",c:"GRC",e:1440,cd:1450,vs:1243,ai:66,mp:87,ag:7.5,r:"Nov 2025"},
+{n:"GPT-5-high",p:"OpenAI",c:"GRCM",e:1444,cd:1460,vs:1232,ai:66,mp:87.1,ag:9.9,x:"400K",pr:"$1.25/$10",r:"Aug 2025"},
+{n:"GPT-5-chat",p:"OpenAI",c:"GW",e:1413,cd:1421,vs:1238,ai:65,mp:86.6,ag:7.5,r:"Aug 2025"},
+{n:"GPT-5-mini",p:"OpenAI",c:"GCE",e:1375,cd:1419,vs:1214,ai:62,mp:82.8,ag:4.4,r:"Aug 2025"},
+{n:"GPT-5-nano",p:"OpenAI",c:"ED",e:1333,cd:1363,vs:1166,ai:52,mp:77.2,ag:2.6,r:"Aug 2025"},
+{n:"o3",p:"OpenAI",c:"RMSC",e:1424,cd:1441,vs:1218,ai:65,mp:85.3,ag:6.5,r:"Apr 2025",d:"Frontier o-series reasoner; introduced full tool use inside chain-of-thought."},
+{n:"o4-mini",p:"OpenAI",c:"RME",e:1362,cd:1385,vs:1192,ai:63,mp:83.2,ag:6.1,r:"Apr 2025"},
+{n:"o3-mini-high",p:"OpenAI",c:"RME",e:1338,cd:1380,ai:53,mp:80.2,ag:3,r:"Feb 2025"},
+{n:"o3-mini",p:"OpenAI",c:"RME",e:1318,cd:1361,ai:51,mp:79.1,ag:2.1,r:"Jan 2025"},
+{n:"o1",p:"OpenAI",c:"RMS",e:1366,cd:1378,vs:1166,ai:50,mp:84.1,ag:1.3,r:"Dec 2024"},
+{n:"o1-mini",p:"OpenAI",c:"RME",e:1318,cd:1366,ai:41,mp:74.2,ag:0.8,r:"Sep 2024"},
+{n:"ChatGPT-4o-latest",p:"OpenAI",c:"GWX",e:1427,cd:1434,vs:1242,ai:38,mp:80.3,r:"Mar 2025"},
+{n:"GPT-4.5 Preview",p:"OpenAI",c:"GW",e:1415,cd:1419,vs:1190,ai:40,mp:81,ag:0.8,r:"Feb 2025"},
+{n:"GPT-4.1",p:"OpenAI",c:"GCL",e:1381,cd:1396,vs:1207,ai:45,mp:80.6,ag:0.4,x:"1M",pr:"$2/$8",r:"Apr 2025"},
+{n:"GPT-4.1-mini",p:"OpenAI",c:"GCE",e:1338,cd:1370,vs:1177,ai:40,mp:78.1,r:"Apr 2025"},
+{n:"GPT-4.1-nano",p:"OpenAI",c:"ED",e:1287,cd:1312,vs:1060,ai:28,mp:65.7,r:"Apr 2025"},
+{n:"GPT-4o",p:"OpenAI",c:"GVUX",e:1302,cd:1307,vs:1134,ai:28,mp:74.8,x:"128K",r:"May 2024",d:"The omni-modal model that brought native voice + vision to ChatGPT at scale."},
+{n:"GPT-4o-mini",p:"OpenAI",c:"GE",e:1289,cd:1300,vs:1063,ai:22,mp:64.8,r:"Jul 2024"},
+{n:"GPT-4 Turbo",p:"OpenAI",c:"G",e:1275,cd:1280,vs:1087,ai:26,mp:69.4,r:"Apr 2024"},
+{n:"GPT-4-1106",p:"OpenAI",c:"G",e:1267,cd:1269,ai:23,mp:63.7,r:"Nov 2023"},
+{n:"GPT-3.5 Turbo",p:"OpenAI",c:"GE",e:1145,cd:1164,ai:9,mp:46.2,r:"2023"},
+{n:"gpt-oss-120b",p:"OpenAI",o:1,c:"RCMB",e:1368,cd:1398,ai:59,mp:80.8,x:"128K",pr:"free weights",r:"Aug 2025",d:"OpenAI's first open-weight model since GPT-2. Apache 2.0 MoE (117B, 5.1B active), runs on a single 80GB GPU."},
+{n:"gpt-oss-20b",p:"OpenAI",o:1,c:"RCDE",e:1315,cd:1371,ai:47,mp:73.6,r:"Aug 2025"},
+{n:"GPT Image 1.5",p:"OpenAI",c:"I",im:1264,r:"Late 2025",d:"#1 on the Arena text-to-image leaderboard. Best-in-class text rendering."},
+{n:"ChatGPT Images 2.0",p:"OpenAI",c:"I",w:1,r:"2026",d:"Latest ChatGPT-native image system; leads on readable text in generated images."},
+{n:"Sora 2",p:"OpenAI",c:"O",r:"Oct 2025",d:"Flagship video+audio generation model. Consumer app retired in 2026; available via API."},
+{n:"gpt-realtime",p:"OpenAI",c:"U",r:"Aug 2025",d:"Production speech-to-speech model for voice agents in the Realtime API."},
+{n:"Whisper large-v3",p:"OpenAI",o:1,c:"UX",r:"Nov 2023",d:"Open-source ASR standard, near-universal deployment for transcription."},
+/* ---- ANTHROPIC ---- */
+{n:"Claude Mythos 5",p:"Anthropic",c:"YCRSAHB",s:"Restricted",w:1,ls:68.0,x:"1M",pr:"$10/$50",r:"Jun 9 2026",d:"#1 on the LLM-Stats index (68.0 — reasoning 72.1, coding 55.9, agent 47.0). The most capable model Anthropic has ever trained. Restricted to ~200 critical-infrastructure orgs via Project Glasswing for finding and fixing software vulnerabilities. Within 1-3 points of Fable 5 on most evals, far ahead on cybersecurity (exploit development)."},
+{n:"Claude Fable 5",p:"Anthropic",c:"CRAFTHL",w:1,ls:66.7,e:1519,cd:1586,x:"1M",pr:"$10/$50",r:"Jun 9 2026",d:"#2 on the LLM-Stats index (66.7), 1,658 Code Arena, 159 tok/s. Mythos-class model made safe for general use. 80.3% SWE-bench Pro, 95.0% SWE-bench Verified, 88.0% Terminal-Bench 2.1, 1932 GDPval-AA Elo, 59.0% HLE — frontier leader on agentic coding and knowledge work at launch. Safety fallback to Opus 4.8 on dangerous cyber/bio requests."},
+{n:"Claude Mythos Preview",p:"Anthropic",c:"YCB",s:"Restricted",w:1,ls:68.0,r:"Apr 7 2026",d:"Tracked at the top of the LLM-Stats index (68.0) despite no public access. Original Mythos vulnerability-discovery model, disclosed Apr 7 2026 after leaked drafts. Never publicly released; deployed defensively with 40+ companies (Microsoft, Apple, Google, AWS, Linux Foundation)."},
+{n:"Claude Opus 4.8",p:"Anthropic",c:"GCRATL",w:1,ls:66.6,e:1514,cd:1579,x:"1M",pr:"$5/$25",r:"May 28 2026",d:"#3 on the LLM-Stats index (66.6). 88.6% SWE-bench Verified, 69.2% SWE-bench Pro, 93.6% GPQA Diamond, 61.4 AA Intelligence Index (#1 at release). Fast mode at 2.5x speed for $10/$50. Same price as Opus 4.7."},
+{n:"Claude Opus 4.7 Thinking",p:"Anthropic",c:"GRCMATL",e:1505,cd:1565,vs:1310,ai:76,mp:90,ag:75.8,x:"1M",pr:"$5/$25",r:"Apr 2026",d:"#1 Coding Elo on the Arena leaderboard. Extended-thinking variant of Opus 4.7."},
+{n:"Claude Opus 4.7",p:"Anthropic",c:"GRCATL",e:1503,cd:1554,vs:1300,ai:73,mp:89.9,ag:62.1,ls:60.6,x:"1M",pr:"$5/$25",r:"Apr 2026",d:"87.6% SWE-bench Verified, 94.2% GPQA Diamond, low hallucination rates."},
+{n:"Claude Opus 4.6 Thinking",p:"Anthropic",c:"GRCMAL",e:1503,cd:1545,vs:1304,ai:73,mp:89.7,ag:69.2,r:"Feb 2026"},
+{n:"Claude Opus 4.6",p:"Anthropic",c:"GRCWAL",e:1490,cd:1535,vs:1298,ai:71,mp:89.5,ag:64.6,ls:57.0,x:"200K/1M",pr:"$15/$75 (later $5/$25)",r:"Feb 2026",d:"80.8% SWE-bench Verified, 91.3% GPQA. Topped the Arena at release."},
+{n:"Claude Opus 4.5 Thinking",p:"Anthropic",c:"GRCM",e:1468,cd:1510,ai:70,mp:89.5,ag:30.6,r:"Nov 2025"},
+{n:"Claude Opus 4.5",p:"Anthropic",c:"GRCW",e:1462,cd:1496,ai:60,mp:88.8,ag:7.8,r:"Nov 2025"},
+{n:"Claude Sonnet 4.6 Thinking",p:"Anthropic",c:"GRCWA",e:1467,cd:1511,vs:1278,ai:71,mp:88,ag:60.4,r:"Late 2025"},
+{n:"Claude Sonnet 4.6",p:"Anthropic",c:"GCWAF",e:1460,cd:1500,vs:1277,ai:65,mp:87.3,ag:37.6,x:"200K/1M",pr:"$3/$15",r:"Late 2025",d:"Workhorse Claude; still the instruction-following and writing-style leader in June 2026."},
+{n:"Claude Sonnet 4.5 Thinking",p:"Anthropic",c:"GRC",e:1432,cd:1485,ai:61,mp:87.5,ag:13.6,r:"Sep 2025"},
+{n:"Claude Sonnet 4.5",p:"Anthropic",c:"GCW",e:1420,cd:1464,ai:49,mp:86,r:"Sep 2025"},
+{n:"Claude Opus 4.1 Thinking",p:"Anthropic",c:"GRC",e:1425,cd:1475,ai:59,mp:87.8,r:"Aug 2025"},
+{n:"Claude Opus 4.1",p:"Anthropic",c:"GCW",e:1419,cd:1465,ai:47,mp:87.3,r:"Aug 2025"},
+{n:"Claude Opus 4 Thinking",p:"Anthropic",c:"GRC",e:1376,cd:1434,vs:1188,ai:57,mp:87.3,ag:8.6,r:"May 2025"},
+{n:"Claude Opus 4",p:"Anthropic",c:"GCW",e:1366,cd:1405,vs:1173,ai:45,mp:86,ag:1.3,r:"May 2025"},
+{n:"Claude Sonnet 4 Thinking",p:"Anthropic",c:"GRC",e:1351,cd:1412,vs:1187,ai:57,mp:84.2,ag:5.9,r:"May 2025"},
+{n:"Claude Sonnet 4",p:"Anthropic",c:"GCW",e:1335,cd:1384,vs:1170,ai:44,mp:83.7,ag:1.3,r:"May 2025"},
+{n:"Claude Haiku 4.5",p:"Anthropic",c:"GCE",e:1378,cd:1436,ai:42,mp:80,x:"200K",pr:"$1/$5",r:"Oct 2025"},
+{n:"Claude 3.7 Sonnet Thinking",p:"Anthropic",c:"GRC",e:1316,cd:1355,vs:1167,ai:45,mp:83.7,ag:0.9,r:"Feb 2025"},
+{n:"Claude 3.7 Sonnet",p:"Anthropic",c:"GCW",e:1301,cd:1341,vs:1145,ai:35,mp:80.3,r:"Feb 2025"},
+{n:"Claude 3.5 Sonnet",p:"Anthropic",c:"GCW",e:1299,cd:1340,vs:1122,ai:31,mp:77.2,r:"Oct 2024"},
+{n:"Claude 3.5 Haiku",p:"Anthropic",c:"GE",e:1256,cd:1287,vs:1095,ai:21,mp:63.4,r:"Oct 2024"},
+{n:"Claude 3 Opus",p:"Anthropic",c:"GW",e:1265,cd:1269,vs:1020,ai:22,mp:69.6,r:"Mar 2024"},
+{n:"Claude 3 Sonnet",p:"Anthropic",c:"G",e:1223,cd:1232,vs:983,ai:14,mp:57.9,r:"Mar 2024"},
+{n:"Claude 3 Haiku",p:"Anthropic",c:"GE",e:1200,cd:1208,vs:950,ai:10,mp:50,r:"Mar 2024"},
+{n:"Claude 2.0",p:"Anthropic",c:"GW",e:1158,cd:1160,ai:9,mp:48.6,r:"Jul 2023"},
+{n:"Claude 2.1",p:"Anthropic",c:"GW",e:1146,cd:1158,ai:10,mp:49.5,r:"Nov 2023"},
+{n:"Claude 1",p:"Anthropic",c:"GW",e:1178,cd:1161,r:"Mar 2023"},
+{n:"Claude Instant 1",p:"Anthropic",c:"GE",e:1135,cd:1136,ai:1,mp:43.4,r:"Mar 2023"},
+/* ---- GOOGLE ---- */
+{n:"Gemini 3.1 Ultra",p:"Google DeepMind",c:"GRVUOXL",s:"Preview",w:1,x:"1M",r:"Apr 2026 preview",d:"Google's top-end tier, in preview via Google AI Ultra with the full multimodal surface."},
+{n:"Gemini 3.1 Pro",p:"Google DeepMind",c:"GRSVXOL",e:1505,cd:1531,vs:1309,ai:76,mp:91,ag:77.1,ls:58.6,x:"1M (2M beta)",pr:"$2/$12",r:"Feb 19 2026",d:"94.3% GPQA Diamond and 77.1% ARC-AGI-2. Broadest modality coverage (text, image, video, audio) of any frontier API model."},
+{n:"Gemini 3.5 Flash",p:"Google DeepMind",c:"GRVEX",e:1504,cd:1535,vs:1301,ai:74,mp:91,ag:72.1,ls:59.2,x:"1M",pr:"$0.85/$3.50",r:"May 2026",d:"Frontier-class quality at flash pricing — the price/performance leader of mid-2026."},
+{n:"Gemini 3.1 Flash-Lite",p:"Google DeepMind",c:"GEX",e:1421,cd:1402,vs:1230,ai:60,mp:86.2,x:"1M",r:"May 8 2026"},
+{n:"Gemini 3 Pro",p:"Google DeepMind",c:"GRVXL",e:1492,cd:1501,vs:1308,ai:73,mp:90,ag:33.6,ls:56.2,x:"1M",r:"Nov 2025"},
+{n:"Gemini 3 Flash",p:"Google DeepMind",c:"GVEX",e:1470,cd:1469,vs:1292,ai:71,mp:89,ag:31.1,x:"1M",r:"Dec 2025"},
+{n:"Gemini 2.5 Pro",p:"Google DeepMind",c:"GRVXL",e:1460,cd:1465,vs:1266,ai:63,mp:86.2,ag:4.9,x:"1M",r:"Mar 2025"},
+{n:"Gemini 2.5 Flash",p:"Google DeepMind",c:"GVE",e:1412,cd:1420,vs:1235,ai:56,mp:83.2,ag:2.5,r:"2025"},
+{n:"Gemini 2.5 Flash-Lite",p:"Google DeepMind",c:"GE",e:1337,cd:1362,vs:1205,ai:42,mp:75.9,r:"2025"},
+{n:"Gemini 2.0 Pro Exp",p:"Google DeepMind",c:"G",e:1398,cd:1396,vs:1170,ai:36,mp:80.5,r:"Feb 2025"},
+{n:"Gemini 2.0 Flash Thinking",p:"Google DeepMind",c:"RG",e:1397,cd:1383,vs:1208,ai:40,mp:79.8,r:"Jan 2025"},
+{n:"Gemini 2.0 Flash",p:"Google DeepMind",c:"GE",e:1370,cd:1371,vs:1191,ai:36,mp:78.2,ag:1.3,r:"Dec 2024"},
+{n:"Gemini 2.0 Flash-Lite",p:"Google DeepMind",c:"GE",e:1330,cd:1338,vs:1097,ai:28,mp:72.4,r:"Feb 2025"},
+{n:"Gemini 1.5 Pro",p:"Google DeepMind",c:"GVL",e:1320,cd:1311,vs:1158,ai:32,mp:75,ag:0.8,r:"Sep 2024"},
+{n:"Gemini 1.5 Flash",p:"Google DeepMind",c:"GE",e:1290,cd:1273,vs:1137,ai:26,mp:68,r:"Sep 2024"},
+{n:"Gemini 1.5 Flash-8B",p:"Google DeepMind",c:"ED",e:1231,cd:1228,vs:1042,ai:17,mp:56.9,r:"Oct 2024"},
+{n:"Gemini 1.0 Pro",p:"Google DeepMind",c:"G",e:1155,cd:1125,r:"Dec 2023"},
+{n:"Gemma 4 31B",p:"Google DeepMind",o:1,c:"GRCDX",e:1449,cd:1462,ai:63,mp:85.2,x:"131K",pr:"free weights",r:"2026",d:"Top-ranked fully open model on the Arena leaderboard."},
+{n:"Gemma 4 26B A4B",p:"Google DeepMind",o:1,c:"GCDE",e:1443,cd:1460,ai:56,mp:82.6,r:"2026"},
+{n:"Gemma 4 12B",p:"Google DeepMind",o:1,c:"RDE",w:1,x:"131K",pr:"free weights",r:"Jun 3 2026",d:"Newest open Gemma, released June 3 2026 with reasoning mode for consumer GPUs."},
+{n:"Gemma 3 27B",p:"Google DeepMind",o:1,c:"GVXD",e:1356,cd:1350,vs:1163,ai:23,mp:66.9,r:"Mar 2025"},
+{n:"Gemma 3 12B",p:"Google DeepMind",o:1,c:"GDE",e:1335,cd:1310,ai:22,mp:59.5,r:"Mar 2025"},
+{n:"Gemma 3 4B",p:"Google DeepMind",o:1,c:"DE",e:1293,cd:1265,ai:12,mp:41.7,r:"Mar 2025"},
+{n:"Gemma 3n E4B",p:"Google DeepMind",o:1,c:"DE",e:1304,cd:1297,ai:16,mp:48.8,r:"Jun 2025"},
+{n:"Gemma 2 27B",p:"Google DeepMind",o:1,c:"GD",e:1236,cd:1226,ai:18,mp:57.5,r:"Jun 2024"},
+{n:"Gemma 2 9B",p:"Google DeepMind",o:1,c:"DE",e:1213,cd:1194,ai:8,mp:49.5,r:"Jun 2024"},
+{n:"Gemma 2 2B",p:"Google DeepMind",o:1,c:"DE",e:1163,cd:1130,r:"Jul 2024"},
+{n:"Gemma 1.1 7B",p:"Google DeepMind",o:1,c:"D",e:1102,cd:1105,r:"Apr 2024"},
+{n:"Gemini 3 Pro Image",p:"Google DeepMind",c:"I",im:1235,r:"Nov 2025",d:"'Nano Banana Pro' — #2 on the image Arena with strong editing and consistency."},
+{n:"Gemini 2.5 Flash Image",p:"Google DeepMind",c:"IE",im:1155,r:"Aug 2025",d:"'Nano Banana' — most battle-tested image model on the Arena (650K votes)."},
+{n:"Imagen 4",p:"Google DeepMind",c:"I",r:"2025",d:"Google's flagship standalone text-to-image family on Vertex AI."},
+{n:"Veo 3.1",p:"Google DeepMind",c:"O",w:1,r:"Late 2025",d:"State-of-the-art video generation with native audio; best AI video of mid-2026 per most rankings."},
+{n:"Gemini 2.5 Native Audio",p:"Google DeepMind",c:"U",r:"2025",d:"Realtime native audio dialog model in the Live API."},
+{n:"AlphaFold 3",p:"Google DeepMind",c:"SB",r:"May 2024",d:"Biomolecular structure prediction across proteins, DNA, RNA and ligands. Nobel-cited lineage; research access."},
+/* ---- xAI ---- */
+{n:"Grok 4.3",p:"xAI",c:"GRFOVL",w:1,x:"1M",pr:"$1.25/$2.50",r:"Apr 30 2026",d:"Reasoning-first flagship and cheapest closed frontier model. Native video input — an xAI first. AA Intelligence Index 53 (v4 scale)."},
+{n:"Grok 4.20",p:"xAI",c:"GRCL",e:1496,cd:1518,vs:1279,ai:72,mp:89.6,ag:65.1,x:"2M",pr:"$2/$6",r:"Feb 2026",d:"2M-token context flagship preceding Grok 4.3."},
+{n:"Grok 4.1 Thinking",p:"xAI",c:"GRM",e:1482,cd:1483,ai:70,mp:89,ag:26,r:"Nov 2025"},
+{n:"Grok 4.1",p:"xAI",c:"GR",e:1463,cd:1463,ai:68,mp:88,r:"Nov 2025"},
+{n:"Grok 4.1 Fast",p:"xAI",c:"ETAL",w:1,x:"2M",pr:"budget",r:"Nov 2025",d:"2M-context agentic workhorse tuned for tool calling at minimal cost."},
+{n:"Grok 4",p:"xAI",c:"GRCM",e:1442,cd:1453,vs:1221,ai:66,mp:86.6,ag:16,x:"260K",pr:"$3/$15",r:"Jul 2025",d:"Trained on the Colossus supercluster; 100% AIME 2025, 50.7% HLE with tools."},
+{n:"Grok 4 Fast",p:"xAI",c:"EL",e:1419,cd:1441,ai:62,mp:85,x:"2M",r:"Sep 2025"},
+{n:"Grok Code Fast 1",p:"xAI",c:"CE",w:1,r:"Aug 2025",d:"Speed-optimized coding model for agentic IDE loops."},
+{n:"Grok 3",p:"xAI",c:"GR",e:1423,cd:1439,ai:44,mp:79.9,r:"Feb 2025"},
+{n:"Grok 3 mini high",p:"xAI",c:"RE",e:1366,cd:1380,ai:56,mp:82.8,r:"Feb 2025"},
+{n:"Grok 2",p:"xAI",c:"G",e:1305,cd:1298,ai:26,mp:70.9,r:"Aug 2024"},
+{n:"Grok 2 mini",p:"xAI",c:"GE",e:1283,cd:1279,r:"Aug 2024"},
+{n:"Grok Imagine",p:"xAI",c:"IO",r:"2025",d:"Aurora-based image and short-video generation inside Grok."},
+/* ---- META ---- */
+{n:"Muse Spark",p:"Meta",c:"GRW",e:1489,cd:1493,vs:1294,ai:71,mp:87.3,r:"2026",d:"First frontier model from Meta Superintelligence Labs — Meta's return to the closed frontier tier."},
+{n:"Llama 4 Behemoth",p:"Meta",o:1,c:"GB",s:"Unreleased",w:1,r:"announced Apr 2025",d:"~2T-parameter teacher model for the Llama 4 family; still unreleased, used internally for distillation."},
+{n:"Llama 4 Maverick",p:"Meta",o:1,c:"GVXL",e:1292,cd:1312,vs:1135,ai:40,mp:80.9,x:"1M",pr:"free weights",r:"Apr 2025",d:"Open multimodal MoE (400B, 17B active, 128 experts)."},
+{n:"Llama 4 Scout",p:"Meta",o:1,c:"VLDE",e:1276,cd:1290,vs:1126,ai:31,mp:75.2,x:"10M",pr:"free weights",r:"Apr 2025",d:"10M-token context window — the largest shipped in any model."},
+{n:"Llama 3.3 70B",p:"Meta",o:1,c:"GCX",e:1276,cd:1279,ai:29,mp:71.3,x:"128K",r:"Dec 2024"},
+{n:"Llama 3.1 405B",p:"Meta",o:1,c:"GCXB",e:1286,cd:1299,ai:27,mp:73.2,x:"128K",r:"Jul 2024",d:"Largest dense open-weight model of its era; backbone of countless fine-tunes."},
+{n:"Llama 3.1 70B",p:"Meta",o:1,c:"GC",e:1265,cd:1268,ai:22,mp:67.6,r:"Jul 2024"},
+{n:"Llama 3.1 8B",p:"Meta",o:1,c:"DE",e:1193,cd:1203,ai:10,mp:47.6,r:"Jul 2024"},
+{n:"Llama 3 70B",p:"Meta",o:1,c:"G",e:1224,cd:1216,ai:14,mp:57.4,r:"Apr 2024"},
+{n:"Llama 3 8B",p:"Meta",o:1,c:"DE",e:1171,cd:1164,ai:7,mp:40.5,r:"Apr 2024"},
+{n:"Llama 3.2 90B Vision",p:"Meta",o:1,c:"V",vs:997,ai:20,mp:67.1,r:"Sep 2024"},
+{n:"Llama 3.2 11B Vision",p:"Meta",o:1,c:"VD",vs:964,ai:11,mp:46.4,r:"Sep 2024"},
+{n:"Llama 3.2 3B",p:"Meta",o:1,c:"DE",e:1118,cd:1097,ai:5,mp:34.7,r:"Sep 2024"},
+{n:"Llama 3.2 1B",p:"Meta",o:1,c:"DE",e:1067,cd:1063,ai:1,mp:20,r:"Sep 2024"},
+{n:"Llama 2 70B",p:"Meta",o:1,c:"G",e:1122,cd:1099,ai:6,mp:40.7,r:"Jul 2023"},
+{n:"Llama 2 13B",p:"Meta",o:1,c:"D",e:1093,cd:1077,ai:6,mp:40.6,r:"Jul 2023"},
+{n:"CodeLlama 34B",p:"Meta",o:1,c:"C",e:1073,cd:1065,r:"Aug 2023"},
+/* ---- ALIBABA / QWEN ---- */
+{n:"Qwen3.7 Max",p:"Alibaba (Qwen)",c:"GRMCXL",e:1486,cd:1505,vs:1289,ai:72,mp:89.6,ls:56.5,x:"1M",pr:"$2.50/$7.50",r:"May 19 2026",d:"Alibaba's flagship. 97.1 HMMT Feb 2026 — competition-math leader among ranked API models."},
+{n:"Qwen3.7 Plus",p:"Alibaba (Qwen)",c:"GRXL",w:1,x:"1M",r:"Jun 1 2026",d:"Cost-balanced tier of the Qwen3.7 generation, released June 1 2026."},
+{n:"Qwen3.6 Plus",p:"Alibaba (Qwen)",c:"GRX",e:1456,cd:1482,ai:70,mp:88.5,r:"Apr 2026"},
+{n:"Qwen3.5 Max",p:"Alibaba (Qwen)",c:"GRX",e:1466,cd:1493,ai:70,mp:87.8,r:"Mar 2026"},
+{n:"Qwen3.5 397B A17B",p:"Alibaba (Qwen)",o:1,c:"GRMX",e:1450,cd:1463,ai:69,mp:87.8,ag:5,pr:"free weights",r:"Feb 2026",d:"Open-weight Qwen3.5 flagship under Apache 2.0."},
+{n:"Qwen3 Max",p:"Alibaba (Qwen)",c:"GRX",e:1443,cd:1468,ai:64,mp:85.3,r:"Sep 2025"},
+{n:"Qwen3 235B A22B 2507",p:"Alibaba (Qwen)",o:1,c:"GRMSX",e:1418,cd:1457,ai:49,mp:82.8,ag:1.3,x:"262K",r:"Jul 2025",d:"88.4% GPQA Diamond — open science-reasoning leader of its class. 100+ languages."},
+{n:"Qwen3 235B Thinking 2507",p:"Alibaba (Qwen)",o:1,c:"RMX",e:1416,cd:1442,ai:62,mp:84.3,r:"Jul 2025"},
+{n:"Qwen3 235B A22B",p:"Alibaba (Qwen)",o:1,c:"GRX",e:1369,cd:1394,ai:46,mp:82.8,r:"Apr 2025"},
+{n:"Qwen3 Next 80B A3B",p:"Alibaba (Qwen)",o:1,c:"GEL",e:1417,cd:1456,ai:57,mp:82.4,r:"Sep 2025"},
+{n:"Qwen3 Coder 480B",p:"Alibaba (Qwen)",o:1,c:"CATL",e:1358,cd:1406,ai:43,mp:78.8,x:"256K",r:"Jul 2025",d:"38.7% SWE-bench Pro — top open coder of its generation."},
+{n:"Qwen3 Coder Next",p:"Alibaba (Qwen)",o:1,c:"CAE",w:1,r:"2026",d:"Efficient successor coder line (~46GB VRAM class)."},
+{n:"Qwen3 VL 235B Instruct",p:"Alibaba (Qwen)",o:1,c:"VX",e:1429,cd:1457,vs:1246,ai:49,mp:82.8,r:"Sep 2025"},
+{n:"Qwen3 VL 235B Thinking",p:"Alibaba (Qwen)",o:1,c:"VR",e:1411,cd:1432,vs:1215,ai:62,mp:84.3,r:"Sep 2025"},
+{n:"Qwen3 32B",p:"Alibaba (Qwen)",o:1,c:"GRD",e:1342,cd:1376,ai:42,mp:79.8,r:"Apr 2025"},
+{n:"Qwen3 30B A3B 2507",p:"Alibaba (Qwen)",o:1,c:"GDE",e:1382,cd:1425,ai:44,mp:77.7,r:"Jul 2025"},
+{n:"Qwen3 30B A3B",p:"Alibaba (Qwen)",o:1,c:"GDE",e:1320,cd:1346,ai:40,mp:77.7,r:"Apr 2025"},
+{n:"QwQ-32B",p:"Alibaba (Qwen)",o:1,c:"RMD",e:1332,cd:1351,ai:46,mp:76.4,r:"Mar 2025"},
+{n:"Qwen3-Omni",p:"Alibaba (Qwen)",o:1,c:"UVX",r:"Sep 2025",d:"Open any-to-any model: text, image, audio and video in; text and speech out."},
+{n:"Qwen-Image",p:"Alibaba (Qwen)",o:1,c:"I",r:"Aug 2025",d:"Open-weight image generation with strong text rendering, especially Chinese."},
+{n:"Qwen2.5 Max",p:"Alibaba (Qwen)",c:"G",e:1367,cd:1373,ai:32,mp:76.2,r:"Jan 2025"},
+{n:"Qwen2.5 72B",p:"Alibaba (Qwen)",o:1,c:"GX",e:1272,cd:1302,ai:27,mp:72,r:"Sep 2024"},
+{n:"Qwen2.5 Coder 32B",p:"Alibaba (Qwen)",o:1,c:"CD",e:1235,cd:1279,ai:23,mp:63.5,r:"Nov 2024"},
+{n:"Qwen2.5 VL 72B",p:"Alibaba (Qwen)",o:1,c:"V",vs:1104,r:"Jan 2025"},
+{n:"Qwen2.5 VL 32B",p:"Alibaba (Qwen)",o:1,c:"VD",vs:1149,r:"Mar 2025"},
+{n:"Qwen2 VL 72B",p:"Alibaba (Qwen)",o:1,c:"V",vs:1044,r:"Aug 2024"},
+{n:"Qwen2 72B",p:"Alibaba (Qwen)",o:1,c:"G",e:1208,cd:1206,ai:19,mp:62.2,r:"Jun 2024"},
+{n:"Qwen-VL-Max",p:"Alibaba (Qwen)",c:"V",e:1381,cd:1440,vs:1213,r:"Aug 2025"},
+{n:"Qwen1.5 110B",p:"Alibaba (Qwen)",o:1,c:"G",e:1180,cd:1192,ai:11,r:"Apr 2024"},
+{n:"Qwen Plus 0125",p:"Alibaba (Qwen)",c:"GE",e:1327,cd:1339,r:"Jan 2025"},
+{n:"Qwen Max 0919",p:"Alibaba (Qwen)",c:"G",e:1284,cd:1296,r:"Sep 2024"},
+/* ---- DEEPSEEK ---- */
+{n:"DeepSeek V4 Pro",p:"DeepSeek",o:1,c:"GRCMAL",e:1467,cd:1491,ai:71,mp:87.5,x:"1M",pr:"$0.29/$0.87",r:"Apr 2026",d:"Frontier open release (MIT). 80.6% SWE-bench Verified at ~29x less than Opus output pricing after the permanent 75% price cut — the value play of 2026."},
+{n:"DeepSeek V4 Flash",p:"DeepSeek",o:1,c:"CEAL",e:1445,cd:1460,ai:64,mp:86.2,x:"1M",pr:"$0.14/$0.28",r:"Apr 2026",d:"Ultra-cheap V4 variant; the default sub-agent engine in hybrid agent stacks."},
+{n:"DeepSeek V3.2 Thinking",p:"DeepSeek",o:1,c:"RMC",e:1422,cd:1438,ai:66,mp:86.2,ag:4,r:"Sep 2025"},
+{n:"DeepSeek V3.2",p:"DeepSeek",o:1,c:"GCE",e:1418,cd:1431,ai:52,mp:83.7,pr:"$0.14/$0.28",r:"Sep 2025"},
+{n:"DeepSeek V3.1 Thinking",p:"DeepSeek",o:1,c:"RC",e:1418,cd:1437,ai:58,mp:85.1,r:"Aug 2025"},
+{n:"DeepSeek V3.1",p:"DeepSeek",o:1,c:"GC",e:1417,cd:1430,ai:47,mp:83.3,r:"Aug 2025"},
+{n:"DeepSeek R1 0528",p:"DeepSeek",o:1,c:"RMS",e:1426,cd:1436,ai:57,mp:84.9,ag:1.3,r:"May 2025"},
+{n:"DeepSeek R1",p:"DeepSeek",o:1,c:"RMSB",e:1373,cd:1382,ai:48,mp:84.4,ag:1.3,x:"128K",r:"Jan 2025",d:"The open reasoning model that shook markets in January 2025. MIT license."},
+{n:"DeepSeek V3 0324",p:"DeepSeek",o:1,c:"GC",e:1377,cd:1391,ai:42,mp:81.9,r:"Mar 2025"},
+{n:"DeepSeek V3",p:"DeepSeek",o:1,c:"G",e:1334,cd:1337,ai:33,mp:75.2,r:"Dec 2024"},
+{n:"DeepSeek V2.5",p:"DeepSeek",o:1,c:"G",e:1296,cd:1316,ai:22,mp:67.2,r:"Dec 2024"},
+{n:"DeepSeek Coder V2",p:"DeepSeek",o:1,c:"C",e:1237,cd:1286,ai:15,mp:58.5,r:"Jul 2024"},
+{n:"DeepSeek LLM 67B",p:"DeepSeek",o:1,c:"G",e:1111,cd:1106,ai:6,r:"Nov 2023"},
+/* ---- Z.AI / ZHIPU ---- */
+{n:"GLM-5.1",p:"Z.ai (Zhipu)",o:1,c:"CRATB",e:1467,cd:1506,ai:71,mp:87.1,ag:5.1,x:"200K",pr:"free weights + API",r:"Apr 7 2026",d:"First Chinese model to top SWE-bench Pro (58.4), clearing GPT-5.4 (57.7) and Opus 4.6 (57.3). MIT license, trained entirely on non-NVIDIA hardware."},
+{n:"GLM-5",p:"Z.ai (Zhipu)",o:1,c:"CRG",e:1452,cd:1461,ai:70,mp:87,ag:5,x:"200K",r:"Feb 2026",d:"~745B MoE base generation. 77.8% SWE-bench Verified, 92.7% AIME 2025."},
+{n:"GLM-5 Turbo",p:"Z.ai (Zhipu)",c:"CAE",w:1,ai:47,x:"200K",pr:"$1.20/$4.00",r:"Mar 15 2026",d:"High-speed GLM-5 variant for low-latency agents — 200+ tokens/sec reported by Z.ai. API-only."},
+{n:"GLM-5V Turbo",p:"Z.ai (Zhipu)",c:"VAE",w:1,ai:43,x:"200K",pr:"$1.20/$4.00",r:"Apr 1 2026",d:"Vision-language Turbo variant with image and video input. 94.8 Design2Code vs Opus 4.6's 77.3 (Z.ai reported)."},
+{n:"GLM-4.7",p:"Z.ai (Zhipu)",o:1,c:"GCE",e:1445,cd:1460,ai:68,mp:85.6,pr:"$0.11 input",r:"Dec 2025",d:"Trained on Huawei Ascend; reported 1.2% hallucination rate at bargain pricing."},
+{n:"GLM-4.6",p:"Z.ai (Zhipu)",o:1,c:"GC",e:1441,cd:1458,ai:56,mp:83.5,r:"Sep 2025"},
+{n:"GLM-4.5",p:"Z.ai (Zhipu)",o:1,c:"GCA",e:1430,cd:1448,ai:54,mp:83.5,r:"Jul 2025"},
+{n:"GLM-4.5 Air",p:"Z.ai (Zhipu)",o:1,c:"GE",e:1386,cd:1410,ai:47,mp:81.5,r:"Jul 2025"},
+{n:"GLM-4 Plus",p:"Z.ai (Zhipu)",c:"G",e:1332,cd:1310,mp:78.6,r:"Jan 2025"},
+/* ---- MOONSHOT ---- */
+{n:"Kimi K2.6 Thinking",p:"Moonshot AI",o:1,c:"GRMCAV",e:1466,cd:1493,vs:1286,ai:71,mp:87.3,ls:57.7,x:"262K",pr:"$0.95/$4",r:"Apr 20 2026",d:"Open-weight 1T MoE multimodal agentic flagship. 96.4% AIME 2026, 90.5% GPQA, agent swarms to 300 sub-agents / 4,000 coordinated steps."},
+{n:"Kimi K2.5 Thinking",p:"Moonshot AI",o:1,c:"RCAV",e:1451,cd:1480,vs:1271,ai:69,mp:87.1,ag:11.8,r:"Jan 2026",d:"99.0% HumanEval, Agent Swarm up to 100 agents."},
+{n:"Kimi K2 Thinking",p:"Moonshot AI",o:1,c:"RAT",e:1438,cd:1450,ai:67,mp:84.8,x:"256K",r:"Nov 2025",d:"First open trillion-parameter thinking agent sustaining hundreds of sequential tool calls."},
+{n:"Kimi K2 0905",p:"Moonshot AI",o:1,c:"GCA",e:1382,cd:1403,ai:49,mp:82.4,r:"Sep 2025"},
+{n:"Kimi K2 0711",p:"Moonshot AI",o:1,c:"GC",e:1380,cd:1402,ai:47,mp:82.4,r:"Jul 2025"},
+/* ---- BYTEDANCE ---- */
+{n:"Doubao Seed 2.0 Pro",p:"ByteDance",c:"GRMCVO",e:1466,cd:1495,vs:1288,ai:70,mp:87.8,ls:56.0,x:"256K",pr:"~$0.47/$2.37",r:"Feb 14 2026",d:"98.3 AIME 2025, 3020 Codeforces Elo, 89.5 VideoMME hour-long video understanding. Powers Doubao (155M weekly users) at ~10x below US frontier prices."},
+{n:"Doubao Seed 2.0 Lite",p:"ByteDance",c:"GRME",w:1,x:"256K",r:"Feb 2026",d:"93 AIME 2025, 87.7 MMLU-Pro at lite-tier cost."},
+{n:"Doubao Seed 2.0 Code",p:"ByteDance",c:"CA",w:1,x:"256K",r:"Feb 2026",d:"Coding-specialized Seed 2.0 for agentic software workflows."},
+{n:"Doubao Seed 2.0 Mini",p:"ByteDance",c:"ED",w:1,r:"Feb 2026"},
+{n:"Seedream 4.5",p:"ByteDance",c:"I",im:1147,r:"Late 2025",d:"ByteDance's flagship image generation model."},
+{n:"Seedance 1.0",p:"ByteDance",c:"O",r:"2025",d:"Top-ranked video generation model on multi-shot consistency."},
+/* ---- TENCENT ---- */
+{n:"Hunyuan Hy3",p:"Tencent",c:"GR",e:1422,cd:1448,ai:66,mp:86.2,r:"2026",d:"Tencent's strongest ranked text model."},
+{n:"Hunyuan T1",p:"Tencent",c:"RX",e:1400,cd:1409,mp:86.2,r:"Jul 2025",d:"First production hybrid Mamba-Transformer reasoner at scale."},
+{n:"Hunyuan TurboS",p:"Tencent",c:"GEX",e:1377,cd:1390,mp:78,r:"Apr 2025"},
+{n:"Hunyuan Turbo",p:"Tencent",c:"GE",e:1314,cd:1335,r:"Jan 2025"},
+{n:"Hunyuan Large",p:"Tencent",c:"G",e:1291,cd:1311,r:"Feb 2025"},
+{n:"Hunyuan Vision 1.5 Thinking",p:"Tencent",c:"VR",e:1410,cd:1419,vs:1220,mp:86.2,r:"2025"},
+{n:"Hunyuan Image 3.0",p:"Tencent",o:1,c:"I",im:1152,r:"2025",d:"Highest-ranked open-weight image model on the Arena."},
+{n:"HunyuanVideo",p:"Tencent",o:1,c:"O",r:"Dec 2024",d:"Largest open-weight video generation model at release (13B)."},
+/* ---- BAIDU ---- */
+{n:"ERNIE 5.1",p:"Baidu",c:"GRX",e:1475,cd:1495,ai:71,mp:87.1,r:"Apr 30 2026"},
+{n:"ERNIE 5.0",p:"Baidu",c:"GX",e:1458,cd:1461,vs:1251,ai:65,mp:86,r:"Jan 2026"},
+{n:"ERNIE 4.5 300B",p:"Baidu",o:1,c:"GVX",w:1,r:"Jun 2025",d:"Open-weight multimodal MoE family under Apache 2.0."},
+/* ---- MINIMAX ---- */
+{n:"MiniMax M3",p:"MiniMax",c:"RAL",w:1,x:"1M",r:"Jun 1 2026",d:"Newest reasoning flagship with 1M context, extending the self-evolving agent line. AA Index 54.7 (v4)."},
+{n:"MiniMax M2.7",p:"MiniMax",o:1,c:"ACF",e:1416,cd:1448,ai:69,mp:87.1,r:"Mar 18 2026",d:"Self-evolving agent model: 78% SWE-bench, 1495 GDPval-AA Elo."},
+{n:"MiniMax M2.5",p:"MiniMax",o:1,c:"AC",e:1408,cd:1436,ai:65,mp:87,ag:4.9,r:"Feb 2026",d:"80.2% SWE-bench Verified."},
+{n:"MiniMax M2.1",p:"MiniMax",o:1,c:"AC",e:1399,cd:1430,ai:64,mp:87,r:"Dec 2025"},
+{n:"MiniMax M1",p:"MiniMax",o:1,c:"RL",e:1351,cd:1369,ai:51,mp:81.6,x:"1M",r:"Jun 2025"},
+{n:"Hailuo 2.3",p:"MiniMax",c:"O",r:"2025",d:"MiniMax's video generation line with strong physics and motion."},
+/* ---- XIAOMI / STEPFUN / OTHERS CN ---- */
+{n:"MiMo V2.5 Pro",p:"Xiaomi",o:1,c:"RMC",e:1466,cd:1485,ai:70,mp:87,r:"Apr 2026",d:"Xiaomi's surprise frontier-adjacent entry; MIT license."},
+{n:"MiMo V2 Pro",p:"Xiaomi",c:"RM",e:1431,cd:1441,ai:69,mp:86.8,r:"Feb 2026"},
+{n:"MiMo V2 Flash",p:"Xiaomi",o:1,c:"ED",e:1402,cd:1411,ai:61,mp:84.8,r:"Feb 2026"},
+{n:"Step 3.7 Flash",p:"StepFun",o:1,c:"REC",w:1,x:"256K",r:"May 29 2026",d:"Latest ultra-fast open reasoning release; AA Index 42.6 (v4)."},
+{n:"Step 3.5 Flash",p:"StepFun",o:1,c:"MREC",e:1387,cd:1433,x:"256K",r:"Feb 2026",d:"196B MoE (11B active) at 100-350 tok/s; 99.8% AIME reported."},
+{n:"Step 3",p:"StepFun",c:"GV",e:1360,cd:1400,vs:1190,r:"Jul 2025"},
+{n:"Step 1o Turbo",p:"StepFun",c:"VE",e:1339,cd:1361,vs:1182,r:"Jun 2025"},
+{n:"Step 1o Vision",p:"StepFun",c:"V",vs:1119,r:"2025"},
+{n:"Step 2 16K",p:"StepFun",c:"G",e:1321,cd:1313,r:"2024"},
+{n:"LongCat Flash Chat",p:"Meituan",o:1,c:"GE",e:1420,cd:1461,ai:49,mp:82.7,r:"Sep 2025"},
+{n:"Yi-Lightning",p:"01.AI",c:"GE",e:1303,cd:1321,r:"Oct 2024"},
+{n:"Yi-Lightning Lite",p:"01.AI",c:"E",e:1284,cd:1286,r:"Oct 2024"},
+{n:"Yi-Large",p:"01.AI",c:"GX",e:1236,cd:1238,ai:14,mp:58.6,r:"May 2024"},
+{n:"Yi-1.5 34B",p:"01.AI",o:1,c:"GX",e:1178,cd:1181,r:"May 2024"},
+{n:"Yi-34B",p:"01.AI",o:1,c:"G",e:1134,cd:1129,r:"Nov 2023"},
+{n:"Yi-Vision",p:"01.AI",c:"V",vs:978,r:"2024"},
+{n:"InternLM 2.5 20B",p:"InternLM",o:1,c:"G",e:1168,cd:1179,r:"Aug 2024"},
+{n:"InternVL2 26B",p:"OpenGVLab",o:1,c:"V",vs:1003,r:"Jul 2024"},
+{n:"Kling 2.5 Turbo",p:"Kuaishou",c:"O",r:"2025",d:"Leading cinematic video generation; consistently top of video arenas."},
+{n:"Wan 2.5",p:"Alibaba (Qwen)",o:1,c:"O",r:"2025",d:"Open-weight video generation family with audio sync."},
+{n:"CogVideoX",p:"Z.ai (Zhipu)",o:1,c:"O",r:"2024"},
+/* ---- MISTRAL ---- */
+{n:"Mistral Large 3",p:"Mistral AI",o:1,c:"GXF",e:1428,cd:1450,ai:40,mp:81,x:"256K",pr:"free weights + API",r:"Late 2025",d:"Best open-weight general model from a Western lab through 2026. Apache 2.0."},
+{n:"Mistral Medium 3.5",p:"Mistral AI",c:"GF",w:1,r:"2026"},
+{n:"Mistral Medium 3.1",p:"Mistral AI",c:"GF",e:1401,cd:1412,ai:38,mp:77.2,r:"Aug 2025"},
+{n:"Mistral Medium 3",p:"Mistral AI",c:"GF",e:1369,cd:1387,vs:1159,ai:37,mp:76,r:"May 2025"},
+{n:"Magistral Medium",p:"Mistral AI",c:"RM",e:1253,cd:1307,ai:36,mp:75.3,r:"Jun 2025",d:"Mistral's transparent chain-of-thought reasoning line."},
+{n:"Devstral 2 123B",p:"Mistral AI",o:1,c:"CAT",w:1,x:"256K",r:"Dec 2025",d:"Open coding-agent specialist built with All Hands AI."},
+{n:"Codestral 25.08",p:"Mistral AI",c:"CE",r:"2025",d:"Fast code-completion specialist for IDE integration."},
+{n:"Mistral Small 3.2",p:"Mistral AI",o:1,c:"DE",e:1337,cd:1361,vs:1145,ai:30,mp:68.1,r:"Jun 2025"},
+{n:"Mistral Small 3.1",p:"Mistral AI",o:1,c:"VDE",e:1269,cd:1295,vs:1121,ai:22,mp:65.9,r:"Mar 2025"},
+{n:"Mistral Small 3",p:"Mistral AI",o:1,c:"DE",e:1238,cd:1251,ai:22,mp:65.2,r:"Jan 2025"},
+{n:"Mistral Large 2411",p:"Mistral AI",o:1,c:"GX",e:1269,cd:1284,ai:25,mp:69.7,r:"Nov 2024"},
+{n:"Pixtral Large",p:"Mistral AI",o:1,c:"V",vs:1088,ai:24,mp:70.1,r:"Nov 2024"},
+{n:"Pixtral 12B",p:"Mistral AI",o:1,c:"VD",vs:1006,ai:9,mp:47.3,r:"Sep 2024"},
+{n:"Ministral 3 8B",p:"Mistral AI",o:1,c:"DET",w:1,r:"2025",d:"Edge-class family (3B/8B/14B) with tool use."},
+{n:"Ministral 8B",p:"Mistral AI",o:1,c:"DE",e:1198,cd:1219,ai:8,mp:38.9,r:"Oct 2024"},
+{n:"Mixtral 8x22B",p:"Mistral AI",o:1,c:"G",e:1168,cd:1175,ai:12,mp:53.7,r:"Apr 2024"},
+{n:"Mixtral 8x7B",p:"Mistral AI",o:1,c:"GE",e:1138,cd:1136,ai:3,mp:38.7,r:"Dec 2023"},
+{n:"Mistral 7B v0.2",p:"Mistral AI",o:1,c:"DE",e:1097,cd:1094,ai:1,mp:24.5,r:"Dec 2023"},
+{n:"Mistral Medium (2023)",p:"Mistral AI",c:"G",e:1171,cd:1172,ai:9,mp:49.1,r:"Dec 2023"},
+{n:"Voxtral",p:"Mistral AI",o:1,c:"U",r:"Jul 2025",d:"Open speech-understanding model family."},
+/* ---- COHERE / AI21 ---- */
+{n:"Command A",p:"Cohere",o:1,c:"FTX",e:1327,cd:1336,ai:30,mp:71.2,x:"256K",r:"Mar 2025",d:"Enterprise RAG/tool-use flagship; runs on 2 GPUs. CC-BY-NC research weights."},
+{n:"Command R+ 0824",p:"Cohere",o:1,c:"FT",e:1233,cd:1200,ai:7,mp:43.2,r:"Aug 2024"},
+{n:"Command R 0824",p:"Cohere",o:1,c:"FE",e:1195,cd:1180,ai:1,mp:33.8,r:"Aug 2024"},
+{n:"Aya Expanse 32B",p:"Cohere",o:1,c:"X",e:1229,cd:1211,ai:6,mp:37.7,r:"Oct 2024",d:"23-language multilingual specialist."},
+{n:"Aya Expanse 8B",p:"Cohere",o:1,c:"XD",e:1193,cd:1184,ai:2,mp:31.2,r:"Oct 2024"},
+{n:"Aya Vision 32B",p:"Cohere",o:1,c:"VX",vs:992,r:"Mar 2025"},
+{n:"Jamba 1.5 Large",p:"AI21 Labs",o:1,c:"LF",e:1242,cd:1244,ai:16,mp:57.2,x:"256K",r:"Aug 2024",d:"Hybrid SSM-Transformer (Mamba) with strong effective-context retention."},
+{n:"Jamba 1.5 Mini",p:"AI21 Labs",o:1,c:"LE",e:1193,cd:1197,x:"256K",r:"Aug 2024"},
+/* ---- NVIDIA / MICROSOFT / AMAZON / IBM ---- */
+{n:"Nemotron 3 Ultra 550B",p:"NVIDIA",o:1,c:"RAB",w:1,x:"262K",pr:"free weights",r:"Jun 4 2026",d:"NVIDIA's largest open reasoning MoE (550B, 55B active), released June 4 2026."},
+{n:"Nemotron 3 Super 120B",p:"NVIDIA",o:1,c:"RA",e:1357,cd:1401,ai:60,mp:83.7,r:"Late 2025"},
+{n:"Nemotron 3 Nano Omni",p:"NVIDIA",o:1,c:"UDV",w:1,r:"2026",d:"Compact open omni-modal model for edge agents."},
+{n:"Llama 3.3 Nemotron 49B v1.5",p:"NVIDIA",o:1,c:"R",e:1340,cd:1359,ai:50,mp:81.4,r:"Jul 2025"},
+{n:"Llama 3.1 Nemotron Ultra 253B",p:"NVIDIA",o:1,c:"R",e:1321,cd:1345,ai:44,mp:82.5,r:"Apr 2025"},
+{n:"Llama 3.1 Nemotron 70B",p:"NVIDIA",o:1,c:"G",e:1285,cd:1289,ai:24,mp:69,r:"Oct 2024"},
+{n:"Nemotron 4 340B",p:"NVIDIA",o:1,c:"GB",e:1229,cd:1220,r:"Jun 2024"},
+{n:"MAI-1 Preview",p:"Microsoft",c:"GB",s:"Preview",e:1398,cd:1406,r:"Aug 2025",d:"Microsoft AI's first in-house frontier foundation model (~500B MoE reported)."},
+{n:"Phi-4",p:"Microsoft",o:1,c:"MRD",e:1222,cd:1242,ai:26,mp:71.4,x:"16K",r:"Dec 2024",d:"Synthetic-data 14B that punches far above its size on math. MIT."},
+{n:"Phi-4 Multimodal",p:"Microsoft",o:1,c:"UVD",w:1,r:"Feb 2025",d:"5.6B speech-vision-text model; topped HuggingFace OpenASR at release."},
+{n:"Phi-3 Medium",p:"Microsoft",o:1,c:"D",e:1144,cd:1146,ai:11,mp:54.3,r:"May 2024"},
+{n:"Phi-3 Mini",p:"Microsoft",o:1,c:"DE",e:1082,cd:1102,r:"Apr 2024"},
+{n:"WizardLM 70B",p:"Microsoft",o:1,c:"G",e:1126,cd:1093,r:"Aug 2023"},
+{n:"Amazon Nova Chat 11-10",p:"Amazon",c:"GF",e:1417,cd:1431,ai:62,mp:83,r:"Nov 2025",d:"Amazon's strongest ranked conversational model."},
+{n:"Amazon Nova Chat 05-14",p:"Amazon",c:"GF",e:1324,cd:1337,ai:33,mp:73.3,r:"May 2025"},
+{n:"Amazon Nova Premier",p:"Amazon",c:"LVOF",w:1,x:"1M",r:"Mar 2025",d:"1M-context teacher model with video understanding on Bedrock."},
+{n:"Amazon Nova 2 Lite",p:"Amazon",c:"FVE",w:1,x:"300K",r:"2026"},
+{n:"Amazon Nova 2 Sonic",p:"Amazon",c:"UA",w:1,r:"2026",d:"Realtime speech-to-speech for voice agents on Bedrock."},
+{n:"Amazon Nova Pro",p:"Amazon",c:"GVF",e:1262,cd:1282,vs:979,ai:27,mp:69.1,r:"Dec 2024"},
+{n:"Amazon Nova Lite",p:"Amazon",c:"VE",e:1233,cd:1253,vs:989,ai:23,mp:59,r:"Dec 2024"},
+{n:"Amazon Nova Micro",p:"Amazon",c:"E",e:1215,cd:1228,ai:18,mp:53.1,r:"Dec 2024"},
+{n:"Granite 4.0",p:"IBM",o:1,c:"FE",w:1,r:"Oct 2025",d:"Hybrid Mamba enterprise family under Apache 2.0 with ISO 42001 certification."},
+{n:"Granite 3.1 8B",p:"IBM",o:1,c:"FD",e:1158,cd:1191,r:"Dec 2024"},
+/* ---- INDEPENDENT / RESEARCH / OSS ---- */
+{n:"Void V1 Flash",p:"Void AI · 0vai.vercel.app",c:"GRCMATL",w:1,pin:1,e:1517,cd:1583,ai:76,ls:66.7,mp:94.7,x:"1M",pr:"free API (rate-limited)",r:"2026",d:"Independent 1T-parameter MoE (50B active) reasoning model from 0vai.vercel.app with 1M context and an OpenAI-compatible free API (model id voidv1-flash). Native reasoning_effort levels auto-detected by Cursor, Windsurf, Claude Code. Published benchmarks (provider-reported, not independently verified): 88.9% SWE-bench Verified, 70.1% Terminal-Bench 2.0, 93.0% AIME 2025, 90.0% GPQA Diamond, 94.7% MMLU-Pro, 99.2% GSM8K, 98.8% HumanEval, 95.6% BBH, 92.8% AgentBench, 94.6% ToolBench, 89.3% WebArena, 99.5% needle retrieval and 82.0% long-context at 1M."},
+{n:"SubQ 1M-Preview",p:"Subquadratic",c:"LB",s:"Preview",w:1,x:"12M",pr:"~1/5 frontier (claimed)",r:"May 5 2026",d:"First commercial fully-subquadratic LLM. Native 12M-token context, claimed 52x faster attention at scale. Not yet independently benchmarked."},
+{n:"ZAYA1-8B",p:"Zyphra",o:1,c:"REDB",w:1,x:"128K",r:"May 6 2026",d:"Apache 2.0 MoE (8B, 760M active) trained end-to-end on AMD Instinct hardware — a non-NVIDIA training milestone."},
+{n:"MiniCPM5-1B",p:"OpenBMB",o:1,c:"DE",w:1,x:"128K",r:"May 25 2026",d:"1B phone-class model with a 128K window."},
+{n:"Falcon H1R 7B",p:"TII (UAE)",o:1,c:"RDE",w:1,x:"128K",r:"2026",d:"Hybrid attention/SSM reasoner for 16GB consumer GPUs."},
+{n:"INTELLECT-3",p:"Prime Intellect",o:1,c:"RB",e:1355,cd:1376,r:"2025",d:"Decentralized-trained open reasoning model."},
+{n:"OLMo 3 32B Think",p:"Ai2",o:1,c:"RB",e:1306,cd:1327,ai:36,mp:75.9,r:"Nov 2025",d:"Fully transparent open-science reasoning model — data, code and weights all public."},
+{n:"OLMo 2 32B",p:"Ai2",o:1,c:"GB",e:1223,cd:1215,ai:14,mp:51.1,r:"Mar 2025"},
+{n:"Tülu 3 70B",p:"Ai2",o:1,c:"GB",e:1260,cd:1251,r:"Nov 2024"},
+{n:"Tülu 3 8B",p:"Ai2",o:1,c:"DB",e:1200,cd:1197,r:"Nov 2024"},
+{n:"Molmo 72B",p:"Ai2",o:1,c:"VB",vs:1010,r:"Sep 2024"},
+{n:"Molmo 7B-D",p:"Ai2",o:1,c:"VD",vs:957,r:"Sep 2024"},
+{n:"Athene V2 Chat 72B",p:"NexusFlow",o:1,c:"G",e:1294,cd:1320,r:"Nov 2024"},
+{n:"Athene 70B",p:"NexusFlow",o:1,c:"G",e:1268,cd:1274,r:"Jul 2024"},
+{n:"Starling LM 7B Beta",p:"NexusFlow",o:1,c:"D",e:1139,cd:1151,r:"Mar 2024"},
+{n:"DBRX Instruct",p:"Databricks",o:1,c:"GF",e:1126,cd:1141,r:"Mar 2024"},
+{n:"Snowflake Arctic",p:"Snowflake",o:1,c:"F",e:1109,cd:1101,r:"Apr 2024"},
+{n:"Reka Core",p:"Reka AI",c:"GV",e:1252,cd:1238,ai:20,r:"Sep 2024"},
+{n:"Reka Flash",p:"Reka AI",c:"VE",e:1225,cd:1208,ai:20,r:"Sep 2024"},
+{n:"Nous Hermes 2 Mixtral",p:"NousResearch",o:1,c:"G",e:1119,cd:1103,r:"Jan 2024"},
+{n:"OpenChat 3.5",p:"OpenChat",o:1,c:"D",e:1114,cd:1119,r:"Jan 2024"},
+{n:"Vicuna 33B",p:"LMSYS",o:1,c:"GB",e:1113,cd:1091,r:"Jun 2023"},
+{n:"Zephyr 7B Beta",p:"HuggingFace",o:1,c:"D",e:1076,cd:1053,r:"Oct 2023"},
+{n:"SOLAR 10.7B",p:"Upstage",o:1,c:"D",e:1091,cd:1073,r:"Dec 2023"},
+{n:"MPT-30B Chat",p:"MosaicML",o:1,c:"G",e:1076,cd:1055,r:"Jun 2023"},
+{n:"pplx-70B-online",p:"Perplexity",c:"GB",e:1099,cd:1055,r:"Nov 2023",d:"Early search-grounded online LLM."},
+/* ---- IMAGE / VIDEO / AUDIO (other labs) ---- */
+{n:"FLUX 2 Max",p:"Black Forest Labs",c:"I",im:1168,r:"Late 2025",d:"Top FLUX tier; #3 on the image Arena."},
+{n:"FLUX 2 Flex",p:"Black Forest Labs",c:"I",im:1157,r:"Late 2025"},
+{n:"FLUX 2 Pro",p:"Black Forest Labs",c:"I",im:1153,r:"Late 2025"},
+{n:"FLUX 2 Dev",p:"Black Forest Labs",o:1,c:"I",im:1149,r:"Late 2025",d:"Open-weight FLUX 2 for local generation."},
+{n:"Reve 2.0",p:"Reve",c:"I",w:1,r:"Jun 3 2026",d:"New #2 on the image Arena leaderboard at launch (June 2026)."},
+{n:"Midjourney v7",p:"Midjourney",c:"I",r:"Apr 2025",d:"Aesthetic-quality leader with draft mode and personalization."},
+{n:"Stable Diffusion 3.5 Large",p:"Stability AI",o:1,c:"I",r:"Oct 2024"},
+{n:"Ideogram 3.0",p:"Ideogram",c:"I",r:"Mar 2025",d:"Typography and graphic-design focused generation."},
+{n:"Recraft V3",p:"Recraft",c:"I",r:"Oct 2024",d:"Design-grade vector and raster generation."},
+{n:"HiDream-I1",p:"HiDream",o:1,c:"I",r:"Apr 2025",d:"17B open-weight image model under MIT."},
+{n:"DALL-E 3",p:"OpenAI",c:"I",r:"Oct 2023"},
+{n:"Runway Gen-4",p:"Runway",c:"O",r:"Mar 2025",d:"Production filmmaking video model with world consistency."},
+{n:"Pika 2.2",p:"Pika",c:"O",r:"2025"},
+{n:"LTX-2",p:"Lightricks",o:1,c:"O",r:"2025",d:"Open video generation with synchronized audio at 4K."},
+{n:"Mochi 1",p:"Genmo",o:1,c:"O",r:"Oct 2024"},
+{n:"Luma Ray3",p:"Luma AI",c:"O",r:"2025",d:"First reasoning video model with HDR output."},
+{n:"ElevenLabs v3",p:"ElevenLabs",c:"U",r:"2025",d:"Expressive TTS leader with audio-tag direction across 70+ languages."},
+{n:"Suno v5",p:"Suno",c:"U",r:"2025",d:"Full-song music generation leader."},
+{n:"Udio v2",p:"Udio",c:"U",r:"2025"},
+{n:"Step-Audio 2",p:"StepFun",o:1,c:"U",r:"2025",d:"Open end-to-end speech understanding and generation."}
+];
+/* ============ APP ============ */
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* category codes */
+const CAT={G:"General",R:"Reasoning",C:"Coding",M:"Math",A:"Agents",T:"Tool Use",V:"Vision",I:"Image Gen",O:"Video Gen",U:"Audio / Speech",X:"Multilingual",L:"Long Context",S:"Science",F:"Enterprise",W:"Writing",E:"Fast / Cheap",D:"On-Device",B:"Research",H:"Health",Y:"Security"};
+const METRICS={e:{l:"ARENA ELO",max:1520},ls:{l:"LLM-STATS",max:70},cd:{l:"CODING ELO",max:1580},vs:{l:"VISION ELO",max:1320},im:{l:"IMAGE ELO",max:1270},ai:{l:"INTEL INDEX",max:80},mp:{l:"MMLU-PRO",max:95},ag:{l:"ARC-AGI-2",max:90}};
+DATA.forEach((m,i)=>m._i=i);
+let state={view:"board",q:"",cat:""};
+/* ---- cross-metric estimator: fit y=a+bx between every metric pair using models that have both ---- */
+const MKEYS=Object.keys(METRICS);
+const REG={};
+MKEYS.forEach(y=>MKEYS.forEach(x=>{
+  if(x===y)return;
+  const pts=DATA.filter(m=>m[x]!=null&&m[y]!=null);
+  if(pts.length<8)return;
+  const n=pts.length;
+  let sx=0,sy=0,sxx=0,sxy=0;
+  pts.forEach(m=>{sx+=m[x];sy+=m[y];sxx+=m[x]*m[x];sxy+=m[x]*m[y]});
+  const b=(n*sxy-sx*sy)/(n*sxx-sx*sx||1),a=(sy-b*sx)/n;
+  REG[x+">"+y]={a,b,n};
+}));
+function estVal(m,k){
+  let sum=0,wt=0;
+  MKEYS.forEach(x=>{
+    if(x===k||m[x]==null)return;
+    const r=REG[x+">"+k];
+    if(!r)return;
+    sum+=(r.a+r.b*m[x])*r.n;wt+=r.n;
+  });
+  return wt?sum/wt:null;
+}
+/* each category ranks by the metric that actually measures it */
+const CATMETRIC={"":"e",C:"cd",V:"vs",I:"im",O:"im",R:"ai",M:"ai",A:"ai",T:"ai",S:"ai",B:"ls",Y:"ls",H:"ls"};
+
+$("#stModels").textContent=DATA.length;
+$("#stProviders").textContent=new Set(DATA.map(m=>m.p)).size;
+$("#stRanked").textContent=DATA.filter(m=>m.e!=null).length;
+$("#stOpen").textContent=DATA.filter(m=>m.o).length;
+
+/* category chips */
+const usedCats=Object.keys(CAT).filter(k=>DATA.some(m=>(m.c||"").includes(k)));
+$("#catChips").innerHTML='<button class="chip on" data-cat="">ALL</button>'+usedCats.map(k=>{
+  const n=DATA.filter(m=>(m.c||"").includes(k)).length;
+  return `<button class="chip" data-cat="${k}">${CAT[k].toUpperCase()}<span class="n">${n}</span></button>`;
+}).join("");
+
+function filtered(){
+  return DATA.filter(m=>{
+    if(state.cat&&!(m.c||"").includes(state.cat))return false;
+    if(state.q){
+      const q=state.q.toLowerCase();
+      if(!((m.n+" "+m.p+" "+(m.d||"")).toLowerCase().includes(q)))return false;
+    }
+    return true;
+  });
+}
+
+function render(){
+  const k=CATMETRIC[state.cat]||"e",M=METRICS[k];
+  const all=filtered();
+  /* one unified board: real score, or Elo estimated from the model's other benchmarks */
+  const entries=all.map(m=>{
+    const real=m[k];
+    const v=real!=null?real:estVal(m,k);
+    return {m,v,est:real==null&&v!=null};
+  });
+  const ranked=entries.filter(x=>x.v!=null).sort((a,b)=>b.v-a.v);
+  const rest=entries.filter(x=>x.v==null).sort((a,b)=>(b.m.pin||0)-(a.m.pin||0)||(b.m.w||0)-(a.m.w||0)||a.m.n.localeCompare(b.m.n));
+  $("#countLine").textContent=`// ${ranked.length} models ranked by ${M.l.toLowerCase()}`;
+  const vals=ranked.map(x=>x.v);
+  const min=vals.length?Math.min(...vals):0,max=vals.length?Math.max(...vals):1;
+  const fmt=v=>k==="e"||k==="cd"||k==="vs"||k==="im"?Math.round(v):Math.round(v*10)/10;
+  const row=(x,i,rk)=>{
+    const m=x.m;
+    const w=rk?Math.max(6,((x.v-min)/(max-min||1)*100)):0;
+    return `<div class="lrow" data-i="${m._i}" style="animation-delay:${Math.min(i*18,420)}ms">
+      <span class="rank${rk&&i<3?" top":""}">${rk?String(i+1).padStart(2,"0"):"—"}</span>
+      <div class="nm"><b>${esc(m.n)}${m.o?'<span class="tagO">OPEN</span>':""}${m.s?`<span class="tagS">${esc(m.s.toUpperCase())}</span>`:(m.w?'<span class="tagS">NEW</span>':"")}</b><span>${esc(m.p)}${m.r?" · "+esc(m.r):""}</span></div>
+      ${rk?`<div class="bar"><i data-w="${w.toFixed(1)}"></i></div><span class="sc">${fmt(x.v)}</span>`:`<span class="sc" style="color:var(--dimmer);font-weight:400">·</span>`}
+    </div>`;
+  };
+  $("#board").innerHTML=(ranked.length?ranked.map((x,i)=>row(x,i,true)).join(""):'<div class="empty">// no models match</div>')+rest.map((x,i)=>row(x,ranked.length+i,false)).join("");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$$("#board .bar i").forEach(b=>b.style.width=b.dataset.w+"%")));
+}
+
+/* modal */
+function metricCells(m){
+  let h="";
+  for(const k in METRICS){
+    if(m[k]==null)continue;
+    const pool=DATA.filter(x=>x[k]!=null).sort((a,b)=>b[k]-a[k]);
+    const rk=pool.findIndex(x=>x===m)+1;
+    h+=`<div class="mcell"><span class="rk">#${rk}/${pool.length}</span><b>${m[k]}</b><span>${METRICS[k].l}</span></div>`;
+  }
+  return h;
+}
+function openModel(i){
+  const m=DATA[i];
+  $("#mName").textContent=m.n;
+  $("#mProv").textContent=m.p.toUpperCase()+(m.s?" · "+m.s.toUpperCase():"");
+  const cats=(m.c||"").split("").map(k=>CAT[k]).filter(Boolean);
+  const mc=metricCells(m);
+  $("#mBody").innerHTML=
+    `<div class="catspills">${cats.map(c=>`<span class="catpill">${c}</span>`).join("")}</div>`+
+    (mc?`<div class="mgrid">${mc}</div>`:"")+
+    `<dl class="kv">
+      <dt>Provider</dt><dd>${esc(m.p)}</dd>
+      <dt>License</dt><dd>${m.o?"Open-weight":"Proprietary"}</dd>
+      ${m.r?`<dt>Release</dt><dd>${esc(m.r)}</dd>`:""}
+      ${m.x?`<dt>Context</dt><dd>${esc(m.x)}</dd>`:""}
+      ${m.pr?`<dt>Pricing</dt><dd>${esc(m.pr)}</dd>`:""}
+      ${m.s?`<dt>Status</dt><dd>${esc(m.s)}</dd>`:""}
+    </dl>`+
+    (m.d?`<div class="note">${esc(m.d)}</div>`:"");
+  $("#backdrop").classList.add("show");$("#sheet").classList.add("show");
+  document.body.style.overflow="hidden";
+}
+function closeModel(){$("#backdrop").classList.remove("show");$("#sheet").classList.remove("show");document.body.style.overflow=""}
+
+/* compare */
+function fillCmp(){
+  const opts='<option value="">— select model —</option>'+DATA.slice().sort((a,b)=>a.n.localeCompare(b.n)).map(m=>`<option value="${m._i}">${esc(m.n)} (${esc(m.p)})</option>`).join("");
+  $("#cmpA").innerHTML=opts;$("#cmpB").innerHTML=opts;
+}
+function renderCmp(){
+  const a=DATA[$("#cmpA").value],b=DATA[$("#cmpB").value],out=$("#cmpOut");
+  if(!a||!b){out.innerHTML='<div class="empty">// select two models above</div>';return}
+  const row=(l,va,vb,num)=>{
+    let ca="",cb="";
+    if(num&&typeof va==="number"&&typeof vb==="number"){ca=va>=vb?"win":"lose";cb=vb>=va?"win":"lose"}
+    return `<div class="cmp-row"><div>${l}</div><div class="${ca}">${va??"—"}</div><div class="${cb}">${vb??"—"}</div></div>`;
+  };
+  let mh="";
+  for(const k in METRICS){
+    if(a[k]==null&&b[k]==null)continue;
+    mh+=row(METRICS[k].l,a[k],b[k],true);
+  }
+  out.innerHTML=`<div class="cmp-grid">
+    <div class="cmp-row head"><div>MODEL</div><div>${esc(a.n)}</div><div>${esc(b.n)}</div></div>
+    ${row("Provider",esc(a.p),esc(b.p))}
+    ${row("License",a.o?"Open-weight":"Proprietary",b.o?"Open-weight":"Proprietary")}
+    ${row("Release",a.r?esc(a.r):null,b.r?esc(b.r):null)}
+    ${row("Context",a.x?esc(a.x):null,b.x?esc(b.x):null)}
+    ${row("Pricing",a.pr?esc(a.pr):null,b.pr?esc(b.pr):null)}
+    ${mh}
+  </div>`;
+}
+
+/* events */
+$$(".tab").forEach(t=>t.addEventListener("click",()=>{
+  $$(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");
+  state.view=t.dataset.view;
+  $("#boardview").style.display=state.view==="board"?"block":"none";
+  $("#compareview").style.display=state.view==="compare"?"flex":"none";
+  if(state.view==="compare"){fillCmp();renderCmp()}
+  window.scrollTo({top:0,behavior:"smooth"});
+}));
+$("#search").addEventListener("input",e=>{state.q=e.target.value.trim();render()});
+$("#catChips").addEventListener("click",e=>{
+  const c=e.target.closest(".chip");if(!c)return;
+  $$("#catChips .chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");
+  state.cat=c.dataset.cat;render();
+});
+document.addEventListener("click",e=>{
+  const r=e.target.closest(".lrow");
+  if(r)openModel(+r.dataset.i);
+});
+
+$("#cmpA").addEventListener("change",renderCmp);
+$("#cmpB").addEventListener("change",renderCmp);
+$("#backdrop").addEventListener("click",closeModel);
+$("#closeS").addEventListener("click",closeModel);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModel()});
+let sy=null;
+$("#sheet").addEventListener("touchstart",e=>{if($("#sheet").querySelector(".sheet-body").scrollTop<=0)sy=e.touches[0].clientY},{passive:true});
+$("#sheet").addEventListener("touchmove",e=>{if(sy===null)return;if(e.touches[0].clientY-sy>90){closeModel();sy=null}},{passive:true});
+$("#sheet").addEventListener("touchend",()=>sy=null);
+
+render();
+</script>
+</body>
+</html>
