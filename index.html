@@ -4,6 +4,64 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Universal AI Model Leaderboard</title>
+<!-- AI/crawler structured data: rankings are machine-readable below -->
+<meta name="description" content="Universal AI Model Leaderboard — ranked list of 200+ AI models by Arena Elo, Coding Elo, Vision Elo, MMLU-Pro, ARC-AGI-2, Intel Index, and LLM-Stats index. Updated June 2026.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Universal AI Model Leaderboard">
+<meta property="og:description" content="Ranked list of 200+ AI language, image, video, and audio models with benchmark scores.">
+<!-- Structured ranking data for AI crawlers (JSON-LD ItemList) -->
+<script type="application/ld+json" id="leaderboard-jsonld">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Universal AI Model Leaderboard",
+  "description": "Ranked list of AI models sorted by Arena Elo. Metrics: e=ArenaElo, cd=CodingElo, vs=VisionElo, im=ImageElo, ai=IntelIndex, mp=MMLU-Pro, ag=ARC-AGI-2, ls=LLM-Stats.",
+  "url": "https://universalaileaderboard.com/",
+  "dateModified": "2026-06-10",
+  "numberOfItems": "__MODEL_COUNT__",
+  "itemListElement": "__RANKED_ITEMS__"
+}
+</script>
+<script>
+// Populate JSON-LD after DATA is defined — runs before </body>
+window.__populateLeaderboardJSONLD__ = function(data) {
+  try {
+    const sorted = data.slice().filter(m => m.e != null).sort((a,b) => b.e - a.e);
+    const items = sorted.map((m, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "name": m.n,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": m.n,
+        "provider": { "@type": "Organization", "name": m.p },
+        "applicationCategory": "Artificial Intelligence",
+        "description": m.d || undefined,
+        "datePublished": m.r || undefined,
+        "additionalProperty": [
+          m.e  != null ? { "@type": "PropertyValue", "name": "ArenaElo",   "value": m.e  } : null,
+          m.cd != null ? { "@type": "PropertyValue", "name": "CodingElo",  "value": m.cd } : null,
+          m.vs != null ? { "@type": "PropertyValue", "name": "VisionElo",  "value": m.vs } : null,
+          m.im != null ? { "@type": "PropertyValue", "name": "ImageElo",   "value": m.im } : null,
+          m.ai != null ? { "@type": "PropertyValue", "name": "IntelIndex", "value": m.ai } : null,
+          m.mp != null ? { "@type": "PropertyValue", "name": "MMLU-Pro",   "value": m.mp } : null,
+          m.ag != null ? { "@type": "PropertyValue", "name": "ARC-AGI-2",  "value": m.ag } : null,
+          m.ls != null ? { "@type": "PropertyValue", "name": "LLM-Stats",  "value": m.ls } : null,
+          m.x  != null ? { "@type": "PropertyValue", "name": "ContextWindow", "value": m.x } : null,
+          m.pr != null ? { "@type": "PropertyValue", "name": "Pricing",    "value": m.pr } : null,
+          { "@type": "PropertyValue", "name": "License", "value": m.o ? "Open-weight" : "Proprietary" },
+          m.s  != null ? { "@type": "PropertyValue", "name": "Status",     "value": m.s  } : null
+        ].filter(Boolean)
+      }
+    }));
+    const el = document.getElementById("leaderboard-jsonld");
+    const obj = JSON.parse(el.textContent);
+    obj.numberOfItems = data.length;
+    obj.itemListElement = items;
+    el.textContent = JSON.stringify(obj);
+  } catch(e) { /* non-critical */ }
+};
+</script>
 <style>
 :root{--bg:#000;--panel:#0a0a0a;--panel2:#111;--line:#222;--line2:#333;--txt:#fff;--dim:#999;--dimmer:#666;--ease:cubic-bezier(.22,1,.36,1)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -702,6 +760,7 @@ $("#sheet").addEventListener("touchmove",e=>{if(sy===null)return;if(e.touches[0]
 $("#sheet").addEventListener("touchend",()=>sy=null);
 
 render();
+window.__populateLeaderboardJSONLD__(DATA);
 </script>
 </body>
 </html>
